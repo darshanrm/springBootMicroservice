@@ -13,7 +13,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Order(1)
-@Component
+@Component("TraceFilter1")
 public class TraceFilter implements GlobalFilter {
 
 	private static final Logger logger = LoggerFactory.getLogger(TraceFilter.class);

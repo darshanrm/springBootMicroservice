@@ -2,6 +2,14 @@ version: "3.8"
 
 services:
 
+  zipkin:
+    image: openzipkin/zipkin
+    mem_limit: 700m
+    ports:
+      - "9411:9411"
+    networks:
+     - darshm-network
+
   configserver:
     image: darshm/bankapplication:configserver
     mem_limit: 700m
@@ -9,6 +17,8 @@ services:
       - "8071:8071"
     networks:
      - darshm-network
+    depends_on:
+      - zipkin
    
   eurekaserver:
     image: darshm/bankapplication:eurekaserver
@@ -19,15 +29,17 @@ services:
      - darshm-network
     depends_on:
       - configserver
+      - zipkin
     deploy:
       restart_policy:
         condition: on-failure
         delay: 15s
-        max_attempts: 20
+        max_attempts: 3
         window: 120s
     environment:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
       
   accounts:
     image: darshm/bankapplication:accounts
@@ -39,17 +51,18 @@ services:
     depends_on:
       - configserver
       - eurekaserver
-    # restart: always
+      - zipkin
     deploy:
       restart_policy:
         condition: on-failure
         delay: 30s
-        max_attempts: 20
+        max_attempts: 3
         window: 120s
     environment:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
   
   loans:
     image: darshm/bankapplication:loans
@@ -59,19 +72,21 @@ services:
     networks:
       - darshm-network
     depends_on:
+      - zipkin
       - configserver
       - eurekaserver
-    # restart: always
+      - accounts
     deploy:
       restart_policy:
         condition: on-failure
         delay: 30s
-        max_attempts: 20
+        max_attempts: 3
         window: 120s
     environment:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
     
   cards:
     image: darshm/bankapplication:cards
@@ -81,19 +96,22 @@ services:
     networks:
       - darshm-network
     depends_on:
+      - zipkin
       - configserver
       - eurekaserver
-    # restart: always
+      - accounts
+      - loans
     deploy:
       restart_policy:
         condition: on-failure
         delay: 30s
-        max_attempts: 20
+        max_attempts: 3
         window: 120s
     environment:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
    
   gatewayserver:
     image: darshm/bankapplication:gatewayserver
@@ -103,6 +121,7 @@ services:
     networks:
       - darshm-network
     depends_on:
+      - zipkin
       - configserver
       - eurekaserver
       - cards
@@ -118,6 +137,7 @@ services:
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      SPRING_ZIPKIN_BASEURL: http://zipkin:9411/
       
 networks:
   darshm-network:

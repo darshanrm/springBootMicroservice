@@ -59,6 +59,25 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
+
+		<!--dependency for distributed tracing - add App name, Trace ID, Span ID to logger-->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-sleuth</artifactId>
+		</dependency>
+
+
+		<!--sleuth distributed logs monitoring system-->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-sleuth-zipkin</artifactId>
+		</dependency>
+
+		<!--rabbitmq for pushing logs to zipkin-->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.amqp</groupId>-->
+<!--			<artifactId>spring-rabbit</artifactId>-->
+<!--		</dependency>-->
 	</dependencies>
 
 	<!--spring cloud dependecy for config server-->
@@ -81,7 +100,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<image>
-						<name>bankapplication/${project.artifactId}</name>
+						<name>darshm/bankapplication:${project.artifactId}</name>
 					</image>
 					<excludes>
 						<exclude>
